@@ -51,19 +51,6 @@ stages {
         }
     }
 
-    /*
-    Enable this stage later after webhook is configured
-    and waitForQualityGate works correctly.
-
-    stage('Quality Gate') {
-        steps {
-            timeout(time: 10, unit: 'MINUTES') {
-                waitForQualityGate abortPipeline: true
-            }
-        }
-    }
-    */
-
     stage('Publish') {
         steps {
             bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
