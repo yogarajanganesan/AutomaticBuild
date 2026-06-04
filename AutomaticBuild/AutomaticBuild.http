@@ -1,0 +1,6 @@
+@AutomaticBuild_HostAddress = http://localhost:5250
+
+GET {{AutomaticBuild_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
