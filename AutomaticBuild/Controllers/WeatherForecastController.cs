@@ -8,7 +8,7 @@ namespace AutomaticBuild.Controllers
     {
         private static readonly string[] Summaries = new[]
         {
-            "Kishan.Yogarajan", "Sujan", "Lingesh", "Soundhar", "Bharathi", "Vishant", "Santhosh", "Yogarajan", "Yogaraja", "Yogaraj"
+            "Kishan.Yogarajan", "Sujan.Yogarajan", "Lingesh", "Soundhar", "Bharathi", "Vishant", "Santhosh", "Yogarajan", "Yogaraja", "Yogaraj"
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
