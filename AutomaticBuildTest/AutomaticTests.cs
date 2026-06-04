@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using AutomaticBuild.Controllers;
 using System.Collections.Generic;
 using System.Linq;
+using AutomaticBuild;
+using Microsoft.AspNetCore.Mvc;
 
 public class AutomaticTests
 {
@@ -86,4 +88,90 @@ public class AutomaticTests
             var controller = new WeatherForecastController(null);
         });
     }
+   
+    // ... (other test cases)
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void GetById_ValidId_ReturnsWeatherForecast(int id)
+    {
+        var logger = new LoggerFactory().CreateLogger<WeatherForecastController>();
+        var controller = new WeatherForecastController(logger);
+
+        var result = controller.GetById(id);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var forecast = Assert.IsType<WeatherForecast>(okResult.Value);
+        Assert.NotNull(forecast.Summary);
+        Assert.InRange(forecast.TemperatureC, -20, 54);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(6)]
+    [InlineData(-1)]
+    public void GetById_InvalidId_ReturnsNotFound(int id)
+    {
+        var logger = new LoggerFactory().CreateLogger<WeatherForecastController>();
+        var controller = new WeatherForecastController(logger);
+
+        var result = controller.GetById(id);
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    [Fact]
+    public void GetById_ReturnsDifferentForecastsForDifferentIds()
+    {
+        var logger = new LoggerFactory().CreateLogger<WeatherForecastController>();
+        var controller = new WeatherForecastController(logger);
+
+        var result1 = controller.GetById(1).Result as OkObjectResult;
+        var result2 = controller.GetById(2).Result as OkObjectResult;
+
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+
+        var forecast1 = result1.Value as WeatherForecast;
+        var forecast2 = result2.Value as WeatherForecast;
+
+        Assert.NotNull(forecast1);
+        Assert.NotNull(forecast2);
+
+        // Dates should be different for different ids
+        Assert.NotEqual(forecast1.Date, forecast2.Date);
+    }
+
+    [Fact]
+    public void GetById_LoggerIsNull_ThrowsException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var controller = new WeatherForecastController(null);
+            controller.GetById(1);
+        });
+    }
+
+    [Fact]
+    public void GetById_SummaryIsFromPredefinedList()
+    {
+        var logger = new LoggerFactory().CreateLogger<WeatherForecastController>();
+        var controller = new WeatherForecastController(logger);
+
+        var result = controller.GetById(2);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var forecast = Assert.IsType<WeatherForecast>(okResult.Value);
+
+        var summaries = new[]
+        {
+            "Kishan.Yogarajan", "Sujan.Yogarajan", "Lingesh.Jawahar", "Soundhar", "Bharathi", "Vishant", "Santhosh", "Yogarajan", "Yogaraja", "Yogaraj"
+        };
+
+        Assert.Contains(forecast.Summary, summaries);
+    }
 }
+
+
