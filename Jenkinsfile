@@ -22,17 +22,19 @@ pipeline {
         }
 
         stage('SonarQube Begin') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat '''
-                    dotnet-sonarscanner begin ^
-                    /k:"AutomaticBuild" ^
-                    /d:sonar.host.url="%SONAR_HOST_URL%" ^
-                    /d:sonar.token="%SONAR_TOKEN%"
-                    '''
-                }
-            }
-        }
+			steps {
+				withSonarQubeEnv('SonarQube') {
+					bat '''
+					"C:\\Users\\User\\.dotnet\\tools\\dotnet-sonarscanner.exe" begin ^
+					/k:"AutomaticBuild" ^
+					/d:sonar.host.url="%SONAR_HOST_URL%" ^
+					/d:sonar.token="%SONAR_TOKEN%"
+					'''
+				}
+			}
+		}
+
+
 
         stage('Build') {
             steps {
@@ -47,13 +49,13 @@ pipeline {
         }
 
         stage('SonarQube End') {
-            steps {
-                bat '''
-                dotnet-sonarscanner end ^
-                /d:sonar.token="%SONAR_TOKEN%"
-                '''
-            }
-        }
+			steps {
+				bat '''
+				"C:\\Users\\User\\.dotnet\\tools\\dotnet-sonarscanner.exe" end ^
+				/d:sonar.token="%SONAR_TOKEN%"
+				'''
+			}
+		}
 
         stage('Quality Gate') {
             steps {
