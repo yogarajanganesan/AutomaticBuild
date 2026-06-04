@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "jDMjBnawmjf+jja1mEHjFVMTIXljF+VxLvJH/oZBjj4=",
+  "Source": "AutomaticBuild",
+  "BasePath": "_content/AutomaticBuild",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
