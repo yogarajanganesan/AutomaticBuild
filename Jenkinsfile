@@ -12,7 +12,10 @@ pipeline {
 				bat '''
 				whoami
 				where dotnet
-				where dotnet-sonarscanner || echo SonarScanner not found in PATH
+				if not exist "C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe" (
+					echo SonarScanner not found
+					exit /b 1
+				)
 				'''
 			}
 		}
@@ -27,7 +30,7 @@ pipeline {
 			steps {
 				withSonarQubeEnv('SonarQube') {
 					bat '''
-					"C:\\Users\\User\\.dotnet\\tools\\dotnet-sonarscanner.exe" begin ^
+					C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe begin ^
 					/k:"AutomaticBuild" ^
 					/d:sonar.host.url="%SONAR_HOST_URL%" ^
 					/d:sonar.token="%SONAR_TOKEN%"
@@ -35,8 +38,6 @@ pipeline {
 				}
 			}
 		}
-
-
 
         stage('Build') {
             steps {
@@ -53,7 +54,7 @@ pipeline {
         stage('SonarQube End') {
 			steps {
 				bat '''
-				"C:\\Users\\User\\.dotnet\\tools\\dotnet-sonarscanner.exe" end ^
+				C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe end ^
 				/d:sonar.token="%SONAR_TOKEN%"
 				'''
 			}
