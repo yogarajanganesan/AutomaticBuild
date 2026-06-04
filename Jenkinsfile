@@ -30,23 +30,33 @@ stages {
 
     stage('SonarQube Analysis') {
         steps {
-            withSonarQubeEnv('SonarQube') {
+            script {
+                withSonarQubeEnv('SonarQube') {
 
-                bat '''
-                C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe begin ^
-                /k:"AutomaticBuild" ^
-                /d:sonar.host.url="%SONAR_HOST_URL%" ^
-                /d:sonar.token="%SONAR_TOKEN%"
-                '''
+                    bat '''
+                    C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe begin ^
+                    /k:"AutomaticBuild" ^
+                    /d:sonar.host.url="%SONAR_HOST_URL%" ^
+                    /d:sonar.token="%SONAR_TOKEN%"
+                    '''
 
-                bat 'dotnet build --configuration Release --no-restore'
+                    bat 'dotnet build --configuration Release --no-restore'
 
-                bat 'dotnet test --configuration Release --logger trx --no-build'
+                    bat 'dotnet test --configuration Release --logger trx --no-build'
 
-                bat '''
-                C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe end ^
-                /d:sonar.token="%SONAR_TOKEN%"
-                '''
+                    bat '''
+                    C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe end ^
+                    /d:sonar.token="%SONAR_TOKEN%"
+                    '''
+                }
+            }
+        }
+    }
+
+    stage('Quality Gate') {
+        steps {
+            timeout(time: 10, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
             }
         }
     }
