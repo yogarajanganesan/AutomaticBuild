@@ -2,10 +2,18 @@ pipeline {
     agent any
 
     environment {
-         SONAR_TOKEN = credentials('SONAR_TOKEN')
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
     }
 
     stages {
+
+        stage('Check Environment') {
+            steps {
+                bat 'whoami'
+                bat 'where dotnet'
+                bat 'where dotnet-sonarscanner'
+            }
+        }
 
         stage('Restore') {
             steps {
@@ -17,8 +25,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat '''
-                    dotnet sonarscanner begin ^
+                    dotnet-sonarscanner begin ^
                     /k:"AutomaticBuild" ^
+                    /d:sonar.host.url="%SONAR_HOST_URL%" ^
                     /d:sonar.token="%SONAR_TOKEN%"
                     '''
                 }
@@ -33,14 +42,14 @@ pipeline {
 
         stage('Run xUnit Tests') {
             steps {
-                bat 'dotnet test --configuration Release --logger trx'
+                bat 'dotnet test --configuration Release --logger trx --no-build'
             }
         }
 
         stage('SonarQube End') {
             steps {
                 bat '''
-                dotnet sonarscanner end ^
+                dotnet-sonarscanner end ^
                 /d:sonar.token="%SONAR_TOKEN%"
                 '''
             }
@@ -73,7 +82,7 @@ pipeline {
         }
 
         success {
-            echo 'Build, xUnit tests, SonarQube analysis, deployment and IIS restart completed successfully.'
+            echo 'Build, SonarQube analysis, deployment and IIS restart completed successfully.'
         }
 
         failure {
