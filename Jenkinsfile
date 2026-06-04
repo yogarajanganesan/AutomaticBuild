@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_ENV = 'SonarQube'
+        SONARQUBE_ENV = withSonarQubeEnv('SonarQube')
         SONAR_PROJECT_KEY = 'DotNetCore-IIS-Deploy'
         SONAR_TOKEN = credentials('GlobalJenkinToken')
     }
