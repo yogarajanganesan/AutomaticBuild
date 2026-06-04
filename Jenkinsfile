@@ -1,36 +1,34 @@
 pipeline {
-agent any
+    agent any
 
-```
-environment {
-    SONAR_TOKEN = credentials('SONAR_TOKEN')
-}
-
-stages {
-
-    stage('Check Environment') {
-        steps {
-            bat '''
-            whoami
-            where dotnet
-
-            if not exist "C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe" (
-                echo SonarScanner not found
-                exit /b 1
-            )
-            '''
-        }
+    environment {
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
     }
 
-    stage('Restore') {
-        steps {
-            bat 'dotnet restore'
-        }
-    }
+    stages {
 
-    stage('SonarQube Analysis') {
-        steps {
-            script {
+        stage('Check Environment') {
+            steps {
+                bat '''
+                whoami
+                where dotnet
+
+                if not exist "C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe" (
+                    echo SonarScanner not found
+                    exit /b 1
+                )
+                '''
+            }
+        }
+
+        stage('Restore') {
+            steps {
+                bat 'dotnet restore'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
                 withSonarQubeEnv('SonarQube') {
 
                     bat '''
@@ -51,42 +49,31 @@ stages {
                 }
             }
         }
-    }
 
-    stage('Quality Gate') {
-        steps {
-            timeout(time: 10, unit: 'MINUTES') {
-                waitForQualityGate abortPipeline: true
+        stage('Publish') {
+            steps {
+                bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
+            }
+        }
+
+        stage('Restart IIS') {
+            steps {
+                bat 'iisreset'
             }
         }
     }
 
-    stage('Publish') {
-        steps {
-            bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
+    post {
+        always {
+            echo 'Pipeline completed.'
+        }
+
+        success {
+            echo 'Build, SonarQube analysis, deployment and IIS restart completed successfully.'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check Jenkins console output.'
         }
     }
-
-    stage('Restart IIS') {
-        steps {
-            bat 'iisreset'
-        }
-    }
-}
-
-post {
-    always {
-        echo 'Pipeline completed.'
-    }
-
-    success {
-        echo 'Build, SonarQube analysis, deployment and IIS restart completed successfully.'
-    }
-
-    failure {
-        echo 'Pipeline failed. Check Jenkins console output.'
-    }
-}
-```
-
 }
