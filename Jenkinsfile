@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_ENV = withSonarQubeEnv('SonarQube')
-        SONAR_PROJECT_KEY = 'DotNetCore-IIS-Deploy'
-        SONAR_TOKEN = credentials('GlobalJenkinToken')
+        SONAR_PROJECT_KEY = 'AutomaticBuild'
+        SONAR_TOKEN = credentials('sonarqube-token')
     }
 
     stages {
@@ -15,27 +14,35 @@ pipeline {
             }
         }
 
+        stage('SonarQube Begin') {
+            steps {
+                bat '''
+                dotnet sonarscanner begin ^
+                /k:"%SONAR_PROJECT_KEY%" ^
+                /d:sonar.host.url="http://localhost:9000" ^
+                /d:sonar.token="%SONAR_TOKEN%"
+                '''
+            }
+        }
+
         stage('Build') {
             steps {
                 bat 'dotnet build --configuration Release --no-restore'
             }
         }
 
-        stage('Run Tests') {
+        stage('Run xUnit Tests') {
             steps {
                 bat 'dotnet test --configuration Release --logger trx'
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube End') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    bat """
-                    dotnet sonarscanner begin /k:"%SONAR_PROJECT_KEY%" /d:sonar.token="%SONAR_TOKEN%"
-                    dotnet build --configuration Release
-                    dotnet sonarscanner end /d:sonar.token="%SONAR_TOKEN%"
-                    """
-                }
+                bat '''
+                dotnet sonarscanner end ^
+                /d:sonar.token="%SONAR_TOKEN%"
+                '''
             }
         }
 
@@ -53,16 +60,12 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Pipeline completed.'
-        }
-
         success {
-            echo 'Build, Test, SonarQube Analysis and Deployment completed successfully.'
+            echo 'Build, xUnit tests, SonarQube scan and deployment completed successfully.'
         }
 
         failure {
-            echo 'Pipeline failed. Check Jenkins console output.'
+            echo 'Pipeline failed.'
         }
     }
 }
