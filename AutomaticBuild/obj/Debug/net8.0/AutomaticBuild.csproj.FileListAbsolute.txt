@@ -30,3 +30,4 @@ F:\Project\AutomaticBuild\AutomaticBuild\obj\Debug\net8.0\refint\AutomaticBuild.
 F:\Project\AutomaticBuild\AutomaticBuild\obj\Debug\net8.0\AutomaticBuild.pdb
 F:\Project\AutomaticBuild\AutomaticBuild\obj\Debug\net8.0\AutomaticBuild.genruntimeconfig.cache
 F:\Project\AutomaticBuild\AutomaticBuild\obj\Debug\net8.0\ref\AutomaticBuild.dll
+F:\Project\AutomaticBuild\AutomaticBuild\obj\Debug\net8.0\AutomaticBuild.sourcelink.json

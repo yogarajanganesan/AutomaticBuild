@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutomaticBuild")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b2376c93f5899dbae039fe70f7a7747c85dae81c")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutomaticBuild")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutomaticBuild")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
