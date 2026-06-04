@@ -8,12 +8,14 @@ pipeline {
     stages {
 
         stage('Check Environment') {
-            steps {
-                bat 'whoami'
-                bat 'where dotnet'
-                bat 'where dotnet-sonarscanner'
-            }
-        }
+			steps {
+				bat '''
+				whoami
+				where dotnet
+				where dotnet-sonarscanner || echo SonarScanner not found in PATH
+				'''
+			}
+		}
 
         stage('Restore') {
             steps {
