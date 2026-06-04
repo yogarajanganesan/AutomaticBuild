@@ -12,6 +12,6 @@ steps:
   - name: Trigger Jenkins Build
     run: |
       curl -X POST \
-      --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
-      "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/build"
+        --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+        "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/build"
 ```
