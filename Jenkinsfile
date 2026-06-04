@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        SONAR_PROJECT_KEY = 'AutomaticBuild'
         SONAR_TOKEN = credentials('sonarqube-token')
     }
 
@@ -16,12 +15,13 @@ pipeline {
 
         stage('SonarQube Begin') {
             steps {
-                bat '''
-                dotnet sonarscanner begin ^
-                /k:"%SONAR_PROJECT_KEY%" ^
-                /d:sonar.host.url="http://localhost:9000" ^
-                /d:sonar.token="%SONAR_TOKEN%"
-                '''
+                withSonarQubeEnv('SonarQube') {
+                    bat '''
+                    dotnet sonarscanner begin ^
+                    /k:"AutomaticBuild" ^
+                    /d:sonar.token="%SONAR_TOKEN%"
+                    '''
+                }
             }
         }
 
@@ -46,6 +46,14 @@ pipeline {
             }
         }
 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Publish') {
             steps {
                 bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
@@ -60,12 +68,16 @@ pipeline {
     }
 
     post {
+        always {
+            echo 'Pipeline completed.'
+        }
+
         success {
-            echo 'Build, xUnit tests, SonarQube scan and deployment completed successfully.'
+            echo 'Build, xUnit tests, SonarQube analysis, deployment and IIS restart completed successfully.'
         }
 
         failure {
-            echo 'Pipeline failed.'
+            echo 'Pipeline failed. Check Jenkins console output.'
         }
     }
 }
