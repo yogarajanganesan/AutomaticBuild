@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONARQUBE_ENV = 'SonarQube'
         SONAR_PROJECT_KEY = 'DotNetCore-IIS-Deploy'
-        SONAR_TOKEN = credentials('sonarqube-token')
+        SONAR_TOKEN = credentials('GlobalJenkinToken')
     }
 
     stages {
