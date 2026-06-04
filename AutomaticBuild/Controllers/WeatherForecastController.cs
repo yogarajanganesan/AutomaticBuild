@@ -30,5 +30,24 @@ namespace AutomaticBuild.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet("{id}")]
+        public ActionResult<WeatherForecast> GetById(int id)
+        {
+            if (id < 1 || id > 5)
+            {
+                return NotFound();
+            }
+
+            var forecast = new WeatherForecast
+            {
+                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(id)),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+            };
+
+            return Ok(forecast);
+        }
+
     }
 }
