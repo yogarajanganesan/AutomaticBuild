@@ -74,6 +74,8 @@ pipeline {
 					else if (env.BRANCH_NAME == "feature/staging") {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Staging"
 					}
+					echo "Branch Name: ${env.BRANCH_NAME}"
+					echo "Output Directory: ${outputDir}"
 
 					bat "dotnet publish -c Release -o ${outputDir}"
 				}
