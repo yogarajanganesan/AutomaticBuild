@@ -61,21 +61,25 @@ pipeline {
 			steps {
 				script {
 
-					def branch = env.BRANCH_NAME ?: env.GIT_BRANCH
+					def branch = bat(
+						script: 'git rev-parse --abbrev-ref HEAD',
+						returnStdout: true
+					).trim()
+
 					echo "Detected Branch: ${branch}"
 
 					def outputDir = ""
 
-					if (branch.contains("main")) {
+					if (branch == "main") {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild"
 					}
-					else if (branch.contains("feature/Dev")) {
+					else if (branch == "feature/Dev") {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Dev"
 					}
-					else if (branch.contains("feature/QA")) {
+					else if (branch == "feature/QA") {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - QA"
 					}
-					else if (branch.contains("feature/staging")) {
+					else if (branch == "feature/staging") {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Staging"
 					}
 
