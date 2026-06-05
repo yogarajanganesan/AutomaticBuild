@@ -59,25 +59,33 @@ pipeline {
 
 		stage('Publish') {
 			steps {
-				 script {
+				script {
+
+					def branch = env.BRANCH_NAME ?: env.GIT_BRANCH
+					echo "Detected Branch: ${branch}"
+
 					def outputDir = ""
 
-					if (env.BRANCH_NAME == "main") {
+					if (branch.contains("main")) {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild"
 					}
-					else if (env.BRANCH_NAME == "feature/Dev") {
+					else if (branch.contains("feature/Dev")) {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Dev"
 					}
-					else if (env.BRANCH_NAME == "feature/QA") {
+					else if (branch.contains("feature/QA")) {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - QA"
 					}
-					else if (env.BRANCH_NAME == "feature/staging") {
+					else if (branch.contains("feature/staging")) {
 						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Staging"
 					}
-					echo "Branch Name: ${env.BRANCH_NAME}"
+
 					echo "Output Directory: ${outputDir}"
 
-					bat "dotnet publish -c Release -o ${outputDir}"
+					if (!outputDir) {
+						error "Output directory not mapped for branch: ${branch}"
+					}
+
+					bat "dotnet publish -c Release -o \"${outputDir}\""
 				}
 			}
 		}
