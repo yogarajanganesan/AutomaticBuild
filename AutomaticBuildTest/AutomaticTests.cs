@@ -110,7 +110,7 @@ public class AutomaticTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(6)]
+    [InlineData(11)]
     [InlineData(-1)]
     public void GetById_InvalidId_ReturnsNotFound(int id)
     {
