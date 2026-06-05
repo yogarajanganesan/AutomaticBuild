@@ -8,7 +8,7 @@ on:
 
 jobs:
   jenkins-build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
       - name: Trigger Jenkins Job
