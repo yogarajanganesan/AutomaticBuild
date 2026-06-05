@@ -60,45 +60,7 @@ pipeline {
 
 		stage('Publish') {
 			steps {
-				script {
-				
-					def branch = bat(
-						script: "git rev-parse --abbrev-ref HEAD",
-						returnStdout: true
-					).trim()
-
-					if (branch == "HEAD") {
-						branch = bat(
-							script: "git rev-parse --abbrev-ref origin/HEAD",
-							returnStdout: true
-						).trim()
-					}
-
-					echo "Detected Branch: ${branch}"
-
-					def outputDir = ""
-
-					if (branch == "main") {
-						outputDir = "F:\\Project\\deploy\\AutomaticBuild"
-					}
-					else if (branch == "feature/Dev") {
-						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Dev"
-					}
-					else if (branch == "feature/QA") {
-						outputDir = "F:\\Project\\deploy\\AutomaticBuild - QA"
-					}
-					else if (branch == "feature/staging") {
-						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Staging"
-					}
-
-					echo "Output Directory: ${outputDir}"
-
-					if (!outputDir) {
-						error "Output directory not mapped for branch: ${branch}"
-					}
-
-					bat "dotnet publish -c Release -o \"${outputDir}\""
-				}
+				bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild - Dev'
 			}
 		}
 
