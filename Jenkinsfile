@@ -56,15 +56,32 @@ pipeline {
 				}
 			}
 		}
+		
 
 		stage('Publish') {
 			steps {
 				script {
+				
+					def branch1 = bat(
+						script: "git rev-parse --abbrev-ref origin/HEAD",
+						returnStdout: true
+					).trim()
+
+					echo "Branch: ${branch1}"
+					
+					def branch2 = bat(
+						script: "git branch --show-current",
+						returnStdout: true
+					).trim()
+
+					echo "Branch: ${branch2}"
 
 					def branch = bat(
 						script: 'git rev-parse --abbrev-ref HEAD',
 						returnStdout: true
 					).trim()
+					
+					
 
 					echo "Detected Branch: ${branch}"
 
