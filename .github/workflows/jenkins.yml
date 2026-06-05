@@ -8,14 +8,19 @@ on:
 
 jobs:
   jenkins-build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
+
+      - name: Show Runner Information
+        shell: pwsh
+        run: |
+          Write-Host "Runner Name: $env:RUNNER_NAME"
+          Write-Host "Machine Name: $env:COMPUTERNAME"
+
       - name: Trigger Jenkins Job
         shell: pwsh
         run: |
-          Write-Host "Triggering Jenkins job..."
-
           $pair = "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}"
           $base64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
 
@@ -24,14 +29,15 @@ jobs:
             -Method POST `
             -Headers @{ Authorization = "Basic $base64" }
 
-          Write-Host "Jenkins job triggered."
+          Write-Host "Jenkins job triggered successfully."
 
       - name: Wait for Jenkins Build
         shell: pwsh
         run: |
-          Start-Sleep -Seconds 60
+          Write-Host "Waiting for Jenkins build..."
+          Start-Sleep -Seconds 30
 
-      - name: Check Jenkins Result
+      - name: Get Jenkins Build Result
         shell: pwsh
         run: |
           $pair = "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}"
@@ -41,22 +47,28 @@ jobs:
             -Uri "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/lastBuild/api/json" `
             -Headers @{ Authorization = "Basic $base64" }
 
-          $result = $response.result
           $buildNumber = $response.number
+          $result = $response.result
 
           Write-Host "Build Number: $buildNumber"
-          Write-Host "Jenkins Result: $result"
-
-          if ($result -eq "SUCCESS") {
-            Write-Host "Jenkins build successful."
-            exit 0
-          }
+          Write-Host "Build Result: $result"
 
           $buildUrl = "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/$buildNumber"
 
-          Write-Host "::error::Jenkins build failed"
-          Write-Host "::error::Console Log: $buildUrl/console"
-          Write-Host "::error::Test Report: $buildUrl/testReport/"
-          Write-Host "::error::SonarQube Dashboard: ${{ secrets.SONARQUBE_URL }}/dashboard?id=AutomaticBuild"
+          if ($result -eq "SUCCESS") {
+              Write-Host "Jenkins build successful."
+              exit 0
+          }
+
+          Write-Host "Jenkins build failed."
+          Write-Host ""
+          Write-Host "Console Log:"
+          Write-Host "$buildUrl/console"
+          Write-Host ""
+          Write-Host "Test Report:"
+          Write-Host "$buildUrl/testReport/"
+          Write-Host ""
+          Write-Host "SonarQube Dashboard:"
+          Write-Host "${{ secrets.SONARQUBE_URL }}/dashboard?id=AutomaticBuild"
 
           exit 1
