@@ -1,4 +1,4 @@
-namespace AutomaticBuild
+namespace AutomaticBuild.Models
 {
     public class WeatherForecast
     {
