@@ -62,26 +62,17 @@ pipeline {
 			steps {
 				script {
 				
-					def branch1 = bat(
-						script: "git rev-parse --abbrev-ref origin/HEAD",
-						returnStdout: true
-					).trim()
-
-					echo "Detected Branch1: ${branch1}"
-					
-					def branch2 = bat(
-						script: "git branch --show-current",
-						returnStdout: true
-					).trim()
-
-					echo "Detected Branch2: ${branch2}"
-
 					def branch = bat(
-						script: 'git rev-parse --abbrev-ref HEAD',
+						script: "git rev-parse --abbrev-ref HEAD",
 						returnStdout: true
 					).trim()
-					
-					
+
+					if (branch == "HEAD") {
+						branch = bat(
+							script: "git rev-parse --abbrev-ref origin/HEAD",
+							returnStdout: true
+						).trim()
+					}
 
 					echo "Detected Branch: ${branch}"
 
