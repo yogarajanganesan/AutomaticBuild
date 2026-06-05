@@ -1,3 +1,4 @@
+using AutomaticBuild.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutomaticBuild.Controllers

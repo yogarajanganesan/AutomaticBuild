@@ -3,6 +3,7 @@ using AutomaticBuild.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using AutomaticBuild.Models;
 
 public class ProductControllerTests
 {

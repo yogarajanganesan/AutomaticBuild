@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using AutomaticBuild.Controllers;
 using System.Collections.Generic;
 using System.Linq;
-using AutomaticBuild;
 using Microsoft.AspNetCore.Mvc;
+using AutomaticBuild.Models;
 
 public class AutomaticTests
 {
