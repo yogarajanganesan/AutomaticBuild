@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      - feature/DEV
+      - feature/QA
+      - feature/staging
   workflow_dispatch:
 
 jobs:
