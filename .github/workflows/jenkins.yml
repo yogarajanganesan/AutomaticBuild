@@ -11,64 +11,88 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Show Runner Information
-        shell: pwsh
+      - name: Verify Runner
+        shell: powershell
         run: |
           Write-Host "Runner Name: $env:RUNNER_NAME"
           Write-Host "Machine Name: $env:COMPUTERNAME"
+          hostname
+          whoami
 
       - name: Trigger Jenkins Job
-        shell: pwsh
+        shell: powershell
         run: |
-          $pair = "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}"
-          $base64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
+          $user = "${{ secrets.JENKINS_USER }}"
+          $token = "${{ secrets.JENKINS_TOKEN }}"
+
+          $pair = "$user`:$token"
+          $base64 = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
 
           Invoke-WebRequest `
-            -Uri "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/build" `
+            -Uri "http://192.168.1.4:8082/job/AutomaticBuild/build" `
             -Method POST `
             -Headers @{ Authorization = "Basic $base64" }
 
-          Write-Host "Jenkins job triggered successfully."
+          Write-Host "Jenkins build triggered."
 
       - name: Wait for Jenkins Build
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "Waiting for Jenkins build..."
-          Start-Sleep -Seconds 30
+          Start-Sleep -Seconds 60
 
-      - name: Get Jenkins Build Result
-        shell: pwsh
+      - name: Analyze Jenkins Result
+        shell: powershell
         run: |
-          $pair = "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}"
-          $base64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
+          $user = "${{ secrets.JENKINS_USER }}"
+          $token = "${{ secrets.JENKINS_TOKEN }}"
 
-          $response = Invoke-RestMethod `
-            -Uri "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/lastBuild/api/json" `
+          $pair = "$user`:$token"
+          $base64 = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
+
+          $build = Invoke-RestMethod `
+            -Uri "http://192.168.1.4:8082/job/AutomaticBuild/lastBuild/api/json" `
             -Headers @{ Authorization = "Basic $base64" }
 
-          $buildNumber = $response.number
-          $result = $response.result
+          $buildNumber = $build.number
+          $result = $build.result
 
           Write-Host "Build Number: $buildNumber"
-          Write-Host "Build Result: $result"
-
-          $buildUrl = "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/$buildNumber"
+          Write-Host "Result: $result"
 
           if ($result -eq "SUCCESS") {
-              Write-Host "Jenkins build successful."
+              Write-Host "SUCCESS: Jenkins Build Passed"
               exit 0
           }
 
-          Write-Host "Jenkins build failed."
-          Write-Host ""
-          Write-Host "Console Log:"
-          Write-Host "$buildUrl/console"
-          Write-Host ""
-          Write-Host "Test Report:"
-          Write-Host "$buildUrl/testReport/"
-          Write-Host ""
-          Write-Host "SonarQube Dashboard:"
-          Write-Host "${{ secrets.SONARQUBE_URL }}/dashboard?id=AutomaticBuild"
+          $console = Invoke-WebRequest `
+            -Uri "http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/consoleText" `
+            -Headers @{ Authorization = "Basic $base64" }
+
+          $log = $console.Content
+
+          if ($log -match "quality gate failure|Quality gate is 'ERROR'") {
+              Write-Error "SONARQUBE ERROR"
+              Write-Host "SonarQube Dashboard:"
+              Write-Host "http://192.168.1.4:9000/dashboard?id=AutomaticBuild"
+          }
+          elseif ($log -match "Failed:\s+[1-9]") {
+              Write-Error "UNIT TEST ERROR"
+              Write-Host "Test Report:"
+              Write-Host "http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/testReport/"
+          }
+          elseif ($log -match "Build FAILED") {
+              Write-Error "BUILD / CODING ERROR"
+              Write-Host "Console Log:"
+              Write-Host "http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/console"
+          }
+          else {
+              Write-Error "JENKINS BUILD FAILED"
+              Write-Host "Console Log:"
+              Write-Host "http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/console"
+          }
 
           exit 1
