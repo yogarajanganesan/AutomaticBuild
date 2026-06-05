@@ -8,31 +8,64 @@ on:
 
 jobs:
   jenkins-build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Trigger Jenkins Job
         run: |
+          echo "Triggering Jenkins job..."
+
           curl -X POST "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/build" \
             --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}"
 
+          echo "Jenkins job triggered."
+
       - name: Wait for Jenkins Build
         run: |
-          echo "Waiting 60 seconds for Jenkins build to complete..."
+          echo "Waiting 60 seconds for Jenkins build to start..."
           sleep 60
 
       - name: Check Jenkins Result
         run: |
-          RESULT=$(curl -s \
-            --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
-            "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/lastBuild/api/json" \
-            | jq -r '.result')
+          echo "Checking Jenkins build result..."
 
+          BUILD_JSON=$(curl -s \
+            --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+            "${{ secrets.JENKINS_URL }}/job/AutomaticBuild/lastBuild/api/json")
+
+          RESULT=$(echo "$BUILD_JSON" | jq -r '.result')
+          BUILD_NUMBER=$(echo "$BUILD_JSON" | jq -r '.number')
+          BUILD_URL="${{ secrets.JENKINS_URL }}/job/AutomaticBuild/$BUILD_NUMBER"
+
+          echo "Jenkins Build Number: $BUILD_NUMBER"
           echo "Jenkins Result: $RESULT"
 
-          if [ "$RESULT" != "SUCCESS" ]; then
-            echo "Jenkins build failed or SonarQube Quality Gate failed"
-            exit 1
+          if [ "$RESULT" = "SUCCESS" ]; then
+            echo "Jenkins build successful."
+            echo "Coding/build checks passed."
+            echo "Unit tests passed."
+            echo "SonarQube Quality Gate passed."
+            exit 0
           fi
 
-          echo "Jenkins build successful"
+          echo "Jenkins build failed."
+          echo ""
+          echo "Possible failure areas:"
+          echo "1. Coding/build error"
+          echo "2. Unit test failure"
+          echo "3. SonarQube Quality Gate failure"
+          echo ""
+
+          echo "Build/coding error logs:"
+          echo "$BUILD_URL/console"
+
+          echo "Unit test result page:"
+          echo "$BUILD_URL/testReport/"
+
+          echo "SonarQube dashboard:"
+          echo "${{ secrets.SONARQUBE_URL }}/dashboard?id=AutomaticBuild"
+
+          echo ""
+          echo "Open the Jenkins console log to see the exact failed stage."
+
+          exit 1
