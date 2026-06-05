@@ -59,7 +59,24 @@ pipeline {
 
 		stage('Publish') {
 			steps {
-				bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
+				 script {
+					def outputDir = ""
+
+					if (env.BRANCH_NAME == "main") {
+						outputDir = "F:\\Project\\deploy\\AutomaticBuild"
+					}
+					else if (env.BRANCH_NAME == "feature/Dev") {
+						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Dev"
+					}
+					else if (env.BRANCH_NAME == "feature/QA") {
+						outputDir = "F:\\Project\\deploy\\AutomaticBuild - QA"
+					}
+					else if (env.BRANCH_NAME == "feature/staging") {
+						outputDir = "F:\\Project\\deploy\\AutomaticBuild - Staging"
+					}
+
+					bat "dotnet publish -c Release -o ${outputDir}"
+				}
 			}
 		}
 
