@@ -5,7 +5,127 @@ on:
     branches:
       - main
   workflow_dispatch:
+name: Jenkins Trigger
 
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  jenkins-build:
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Runner
+        run: |
+          Write-Host "Runner Name: $env:RUNNER_NAME"
+          Write-Host "Machine Name: $env:COMPUTERNAME"
+          hostname
+          whoami
+
+      - name: Trigger Jenkins Job
+        run: |
+          try {
+              $user = "${{ secrets.JENKINS_USER }}"
+              $token = "${{ secrets.JENKINS_TOKEN }}"
+
+              $pair = "$user`:$token"
+              $base64 = [Convert]::ToBase64String(
+                  [System.Text.Encoding]::ASCII.GetBytes($pair)
+              )
+
+              Invoke-WebRequest `
+                -Uri "http://192.168.1.4:8082/job/AutomaticBuild/build" `
+                -Method POST `
+                -Headers @{ Authorization = "Basic $base64" } `
+                -UseBasicParsing
+
+              Write-Host "Jenkins build triggered successfully."
+          }
+          catch {
+              Write-Error "Failed to trigger Jenkins job: $_"
+              exit 1
+          }
+
+      - name: Wait for Jenkins Build
+        run: |
+          Write-Host "Waiting for Jenkins build to start and complete..."
+          Start-Sleep -Seconds 60
+
+      - name: Analyze Jenkins Result
+        run: |
+          try {
+              $user = "${{ secrets.JENKINS_USER }}"
+              $token = "${{ secrets.JENKINS_TOKEN }}"
+
+              $pair = "$user`:$token"
+              $base64 = [Convert]::ToBase64String(
+                  [System.Text.Encoding]::ASCII.GetBytes($pair)
+              )
+
+              # Get build info
+              $build = Invoke-RestMethod `
+                -Uri "http://192.168.1.4:8082/job/AutomaticBuild/lastBuild/api/json" `
+                -Headers @{ Authorization = "Basic $base64" }
+
+              $buildNumber = $build.number
+              $result = $build.result
+
+              Write-Host "Build Number: $buildNumber"
+              Write-Host "Result: $result"
+
+              # Get console log
+              $console = Invoke-WebRequest `
+                -Uri "http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/consoleText" `
+                -Headers @{ Authorization = "Basic $base64" } `
+                -UseBasicParsing
+
+              $log = $console.Content
+
+              # =========================
+              # RESULT CLASSIFICATION
+              # =========================
+
+              if ($result -eq "SUCCESS") {
+                  Write-Host "SUCCESS: Jenkins Build Passed"
+                  exit 0
+              }
+
+              if ($log -match "quality gate failure|Quality gate is 'ERROR'") {
+                  Write-Host "SONARQUBE FAILED (Quality Gate)"
+                  Write-Host "Dashboard: http://192.168.1.4:9000/dashboard?id=AutomaticBuild"
+                  exit 2
+              }
+
+              if ($log -match "Failed:\s+[1-9]") {
+                  Write-Host "UNIT TEST FAILED"
+                  Write-Host "Test Report: http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/testReport/"
+                  exit 3
+              }
+
+              if ($log -match "Build FAILED|FAILED") {
+                  Write-Host "GENERAL BUILD FAILURE"
+                  Write-Host "Console: http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/console"
+                  exit 1
+              }
+
+              Write-Host "UNKNOWN FAILURE"
+              Write-Host "Console: http://192.168.1.4:8082/job/AutomaticBuild/$buildNumber/console"
+              exit 1
+          }
+          catch {
+              Write-Error "Failed to analyze Jenkins build: $_"
+              exit 1
+          }
 jobs:
   jenkins-build:
     runs-on: self-hosted
