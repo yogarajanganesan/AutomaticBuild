@@ -28,33 +28,40 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
+			steps {
+				withSonarQubeEnv('SonarQube') {
+					bat '''
+					C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe begin ^
+					/k:"AutomaticBuild" ^
+					/d:sonar.host.url="%SONAR_HOST_URL%" ^
+					/d:sonar.token="%SONAR_TOKEN%"
+					'''
 
-                    bat '''
-                    C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe begin ^
-                    /k:"AutomaticBuild" ^
-                    /d:sonar.host.url="%SONAR_HOST_URL%" ^
-                    /d:sonar.token="%SONAR_TOKEN%"
-                    '''
+					bat 'dotnet build --configuration Release --no-restore'
 
-                    bat 'dotnet build --configuration Release --no-restore'
+					bat 'dotnet test --configuration Release --logger trx --no-build'
 
-                    bat 'dotnet test --configuration Release --logger trx --no-build'
+					bat '''
+					C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe end ^
+					/d:sonar.token="%SONAR_TOKEN%"
+					'''
+				}
+			}
+		}
 
-                    bat '''
-                    C:\\Tools\\SonarScanner\\dotnet-sonarscanner.exe end ^
-                    /d:sonar.token="%SONAR_TOKEN%"
-                    '''
-                }
-            }
-        }
+		stage('Quality Gate') {
+			steps {
+				timeout(time: 5, unit: 'MINUTES') {
+					waitForQualityGate abortPipeline: true
+				}
+			}
+		}
 
-        stage('Publish') {
-            steps {
-                bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
-            }
-        }
+		stage('Publish') {
+			steps {
+				bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
+			}
+		}
 
         stage('Restart IIS') {
             steps {
