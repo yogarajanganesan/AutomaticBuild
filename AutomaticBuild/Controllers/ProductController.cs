@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutomaticBuild.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+
 
 
 namespace AutomaticBuild.Controllers
