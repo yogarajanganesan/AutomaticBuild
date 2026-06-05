@@ -65,7 +65,7 @@ namespace AutomaticBuild.Controllers
         [HttpGet("{id}")]
         public ActionResult<WeatherForecast> GetById(int id)
         {
-            if (id < 1 || id > 5 || id > 5)
+            if (id < 1 || id > 10)
             {
                 return NotFound();
             }
