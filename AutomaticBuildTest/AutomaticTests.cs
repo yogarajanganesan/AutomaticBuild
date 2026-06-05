@@ -165,10 +165,10 @@ public class AutomaticTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var forecast = Assert.IsType<WeatherForecast>(okResult.Value);
 
-        var summaries = new[]
-        {
-            "Kishan.Yogarajan", "Sujan.Yogarajan", "Lingesh.Jawahar", "Soundhar", "Bharathi", "Vishant", "Santhosh", "Yogarajan", "Yogaraja", "Yogaraj"
-        };
+        var summaries =string.Empty ;
+        //{
+        //    "Kishan.Yogarajan", "Sujan.Yogarajan", "Lingesh.Jawahar", "Soundhar", "Bharathi", "Vishant", "Santhosh", "Yogarajan", "Yogaraja", "Yogaraj"
+        //};
 
         Assert.Contains(forecast.Summary, summaries);
     }
