@@ -59,7 +59,7 @@ pipeline {
 
 		stage('Publish') {
 			steps {
-				bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild'
+				bat 'dotnet publish -c Release -o F:\\Project\\deploy\\AutomaticBuild - QA'
 			}
 		}
 
