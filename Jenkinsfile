@@ -67,14 +67,14 @@ pipeline {
 						returnStdout: true
 					).trim()
 
-					echo "Branch: ${branch1}"
+					echo "Detected Branch1: ${branch1}"
 					
 					def branch2 = bat(
 						script: "git branch --show-current",
 						returnStdout: true
 					).trim()
 
-					echo "Branch: ${branch2}"
+					echo "Detected Branch2: ${branch2}"
 
 					def branch = bat(
 						script: 'git rev-parse --abbrev-ref HEAD',
