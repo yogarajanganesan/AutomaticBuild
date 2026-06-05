@@ -85,7 +85,7 @@ public class AutomaticTests
         // Negative scenario: passing null logger should throw
         Assert.Throws<System.ArgumentNullException>(() =>
         {
-            var controller = new WeatherForecastController(null);
+            var controller = new WeatherForecastController(null!);
         });
     }
    
@@ -149,7 +149,7 @@ public class AutomaticTests
     {
         Assert.Throws<ArgumentNullException>(() =>
         {
-            var controller = new WeatherForecastController(null);
+            var controller = new WeatherForecastController(null!);
             controller.GetById(1);
         });
     }
@@ -173,5 +173,4 @@ public class AutomaticTests
         Assert.Contains(forecast.Summary, summaries);
     }
 }
-
 
